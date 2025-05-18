@@ -46,7 +46,7 @@ function Translating({text, setText}) {
 
   const handleSendMessage = async (message) => {
     try {
-      const response = await fetch('https://translator.onrender.com/generate-response', {
+      const response = await fetch('https://translator-wyiz.onrender.com/generate-response', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
