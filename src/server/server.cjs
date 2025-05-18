@@ -5,10 +5,7 @@ const fetch = require('node-fetch');
 
 const app = express();
 
-app.use(express.json())
-app.use(cors({
-    origin: "https://translator.netlify.app",
-}));
+app.use(cors())
 app.use(express.json());
 
 const endpoint = "https://models.github.ai/inference";
