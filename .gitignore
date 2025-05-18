@@ -24,4 +24,3 @@ dist-ssr
 *.sw?
 
 help/
-src/server/.env
