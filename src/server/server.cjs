@@ -7,9 +7,14 @@ const app = express();
 
 app.use(express.json())
 app.use(cors({
-    origin: "https://translator.netlify.app",
+    origin: "https://latin-hu-translator.netlify.app",
 }));
-app.use(express.json());
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "https://latin-hu-translator.netlify.app");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  next();
+});
 
 const endpoint = "https://models.github.ai/inference";
 const model = "openai/gpt-4.1";
