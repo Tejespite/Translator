@@ -17,6 +17,7 @@ function NewText({ text, setText }) {
         id="text_input"
         onKeyDown={handleKeyDown}
       ></textarea>
+      <br/>
       <input
         type="button"
         value="Load"
@@ -68,7 +69,23 @@ function Translating({text, setText}) {
   return (
     <>
       <div id="texts_div">
-        <div className="texts" onMouseUp={handleHighlight} onTouchEnd={handleHighlight} > {text} </div>
+        <div className="texts" onMouseUp={handleHighlight} onTouchEnd={handleHighlight}>
+          {text
+            .split(/([.!?]+)\s*/)
+            .filter(Boolean)
+            .reduce((acc, cur, idx, arr) => {
+              // Group sentence and punctuation
+              if (/[.!?]+/.test(cur)) {
+                acc[acc.length - 1] += cur;
+              } else {
+                acc.push(cur);
+              }
+              return acc;
+            }, [])
+            .map((sentence, i) => (
+              <div key={i} style={{ marginBottom: "0.6em" }}>{sentence}</div>
+            ))}
+        </div>
         <div className="texts"> {translation} </div>
       </div>
       <input type="button" value="Clear" onClick={()=> setText("")} />
