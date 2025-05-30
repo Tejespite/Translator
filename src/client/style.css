@@ -52,3 +52,66 @@ input[type="button"]:hover {
     color: yellow;
     background: #444b58;
 }
+
+#dictionary_div {
+    position: fixed;
+    top: 50%;
+    left: 55%;
+    width: 40%;
+    height: 400px;
+    overflow-y: auto;
+    background-color: #7c7e81ee;
+    border-radius: 15px;
+    padding: 10px;
+    z-index: 1000;
+}
+
+#show_dictionary_btn {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background-color: green;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 12px;
+}
+
+#hide_dictionary_btn{
+    position: absolute;
+    top: 0px;
+    right: 10px;
+    background-color: red;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 12px;
+}
+
+#drag_div {
+    position: absolute;
+    top: 0;
+    left: 35%;
+    width: 30%;
+    height: 32px;
+    /*background: #6c6e71;*/
+    border-radius: 20px;
+    cursor: move;
+    user-select: none;
+    text-align: center;
+    font-weight: bold;
+    color: #fff;
+    padding-bottom: 5px;
+}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import "./style.css";
 
 function NewText({ text, setText }) {
@@ -86,17 +86,174 @@ function Translating({text, setText}) {
               <div key={i} style={{ marginBottom: "0.6em" }}>{sentence}</div>
             ))}
         </div>
-        <div className="texts"> {translation} </div>
+        <div className="texts"> {translation
+            .split(/([.!?]+)\s*/)
+            .filter(Boolean)
+            .reduce((acc, cur, idx, arr) => {
+              // Group sentence and punctuation
+              if (/[.!?]+/.test(cur)) {
+                acc[acc.length - 1] += cur;
+              } else {
+                acc.push(cur);
+              }
+              return acc;
+            }, [])
+            .map((sentence, i) => (
+              <div key={i} style={{ marginBottom: "0.6em" }}>{sentence}</div>
+            ))} </div>
       </div>
       <input type="button" value="Clear" onClick={()=> setText("")} />
     </>
   );
 }
 
+function Dictionary() {
+  const [display, setDisplay] = useState(false);
+  const [definitions, setDefinitions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [word, setWord] = useState("");
+  const dictRef = useRef(null);
+  const dragRef = useRef(null);
+
+  useEffect(() => {
+    const dict = dictRef.current;
+    const drag = dragRef.current;
+    if (!dict || !drag) return;
+    let isDragging = false, offsetX = 0, offsetY = 0;
+
+    const onMouseDown = (e) => {
+      if (e.button !== 0) return;
+      isDragging = true;
+      offsetX = e.clientX - dict.getBoundingClientRect().left;
+      offsetY = e.clientY - dict.getBoundingClientRect().top;
+      dict.style.cursor = "grabbing";
+    };
+    const onMouseMove = (e) => {
+      if (!isDragging) return;
+      dict.style.left = (e.clientX - offsetX) + "px";
+      dict.style.top = (e.clientY - offsetY) + "px";
+      dict.style.right = "auto";
+      dict.style.bottom = "auto";
+    };
+    const onMouseUp = () => {
+      isDragging = false;
+      dict.style.cursor = "default";
+    };
+
+    drag.addEventListener("mousedown", onMouseDown);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+
+    return () => {
+      drag.removeEventListener("mousedown", onMouseDown);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+  }, [display]);
+
+  const handleSearch = async () => {
+    const s = document.querySelector("#dictionary_div input[type='text']");
+    const searchedWord = s.value.trim();
+    setWord(searchedWord);
+    s.value = "";
+    if (!searchedWord) return;
+
+    setLoading(true);
+    setError("");
+    setDefinitions([]);
+
+    try {
+      const response = await fetch(
+        `/api/vocabulary/search/?query=${encodeURIComponent(searchedWord)}&forms_only=false`,
+        {
+          headers: {
+            "accept": "application/json"
+          }
+        }
+      );
+      if (!response.ok) throw new Error("API error");
+      const data = await response.json();
+      setDefinitions(data);
+    } catch (err) {
+      setError("Failed to fetch definitions.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSearch();
+    }
+  };
+
+
+  if (!display) {
+    return (
+      <input
+        id="show_dictionary_btn"
+        type="button"
+        value="Show dictionary"
+        onClick={() => setDisplay(true)}
+      />
+    );
+  } else {
+    return (
+      <>
+        <div id="dictionary_div" onKeyDown={handleKeyDown} ref={dictRef}>
+          <div id="drag_div" ref={dragRef}>. . .</div>
+          <h1>Dictionary</h1>
+          <input
+            id="hide_dictionary_btn"
+            type="button"
+            value="Hide dictionary"
+            onClick={() => setDisplay(false)}
+          />
+          Search: <input type="text" />{" "}
+          <input type="button" value="search" onClick={handleSearch} />
+          
+          <br />
+          definitions of <p style={{ display: "inline", fontWeight: "bold", color: "blue" }}> {word}:</p>
+
+          {loading && <p>Loading...</p>}
+          {error && <p style={{ color: "red" }}>{error}</p>}
+          <ul>
+            {definitions.map((entry) => (
+              <li key={entry.id}>
+                <a href={entry.url} target="_blank" rel="noopener noreferrer">
+                  {entry.full_name}
+                </a>
+                <br />
+                <b>Type:</b> {entry.type.label}
+                <br />
+                <b>EN:</b> {entry.translations_unstructured?.en}
+                <br />
+                <b>DE:</b> {entry.translations_unstructured?.de}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </>
+    );
+  }
+}
+
 function App() {
   const [text, setText] = useState("");
 
-  return text=="" ? (<NewText text={text} setText={setText} />) : (<Translating text={text} setText={setText} />)
+  if (text=="") {
+    return <NewText text={text} setText={setText} />
+  }
+  else {
+    return (
+      <>
+        <Translating text={text} setText={setText} />
+        <Dictionary />
+      </>
+    );
+  }
 }
 
 export default App;

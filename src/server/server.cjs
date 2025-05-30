@@ -67,6 +67,22 @@ app.post('/generate-response', async (req, res) => {
     }
 });
 
+app.get('/api/vocabulary/search/', async (req, res) => {
+  const { query, forms_only } = req.query;
+  if (!query) return res.status(400).json({ error: "Missing query" });
+
+  const url = `https://www.latin-is-simple.com/api/vocabulary/search/?query=${encodeURIComponent(query)}&forms_only=${forms_only || "false"}`;
+  try {
+    const response = await fetch(url, {
+      headers: { "accept": "application/json" }
+    });
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch from dictionary API" });
+  }
+});
+
 if (require.main === module) {
     app.listen(5000, () => {
         console.log('Server running on port 5000');
