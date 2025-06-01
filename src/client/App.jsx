@@ -32,17 +32,32 @@ function NewText({ text, setText }) {
 function Translating({text, setText}) {
   const [highlightedText, setHighlightedText] = useState("");
   const [translation, setTranslation] = useState("");
+  const [highlightLine, setHighlightLine] = useState(null);
 
   const handleHighlight = () => {
     const selection = window.getSelection();
     const selectedText = selection.toString();
 
-    if (selectedText.length < 1 || selectedText === undefined) {
-      return;
+    if (!selectedText) return;
+
+    // Find the line number of the highlighted text
+    const lines = text.split('\n');
+    let charCount = 0;
+    let foundLine = null;
+    for (let i = 0; i < lines.length; i++) {
+      if (
+        charCount <= text.indexOf(selectedText) &&
+        text.indexOf(selectedText) < charCount + lines[i].length + 1
+      ) {
+        foundLine = i;
+        break;
+      }
+      charCount += lines[i].length + 1;
     }
 
     setHighlightedText(selectedText);
-    handleSendMessage(selectedText); // Pass the selected text directly
+    setHighlightLine(foundLine);
+    handleSendMessage(selectedText);
   };
 
   const handleSendMessage = async (message) => {
@@ -52,7 +67,7 @@ function Translating({text, setText}) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message }), // Use the passed message
+        body: JSON.stringify({ message }),
       });
 
       const data = await response.json();
@@ -66,43 +81,33 @@ function Translating({text, setText}) {
     }
   };
 
+  // Split text and translation by lines
+  const textLines = text.split('\n');
+  const translationLines = textLines.map((_, idx) =>
+    highlightLine === idx && translation
+      ? translation
+      : ""
+  );
+
   return (
     <>
-      <div id="texts_div">
-        <div className="texts" onMouseUp={handleHighlight} onTouchEnd={handleHighlight}>
-          {text
-            .split(/([.!?]+)\s*/)
-            .filter(Boolean)
-            .reduce((acc, cur, idx, arr) => {
-              // Group sentence and punctuation
-              if (/[.!?]+/.test(cur)) {
-                acc[acc.length - 1] += cur;
-              } else {
-                acc.push(cur);
-              }
-              return acc;
-            }, [])
-            .map((sentence, i) => (
-              <div key={i} style={{ marginBottom: "0.6em" }}>{sentence}</div>
-            ))}
-        </div>
-        <div className="texts"> {translation
-            .split(/([.!?]+)\s*/)
-            .filter(Boolean)
-            .reduce((acc, cur, idx, arr) => {
-              // Group sentence and punctuation
-              if (/[.!?]+/.test(cur)) {
-                acc[acc.length - 1] += cur;
-              } else {
-                acc.push(cur);
-              }
-              return acc;
-            }, [])
-            .map((sentence, i) => (
-              <div key={i} style={{ marginBottom: "0.6em" }}>{sentence}</div>
-            ))} </div>
+      <div id="texts_div" style={{ display: "flex", gap: "1em" }}>
+        <pre
+          className="texts"
+          onMouseUp={handleHighlight}
+          onTouchEnd={handleHighlight}
+          style={{ whiteSpace: "pre-wrap", flex: 1, margin: 0 }}
+        >
+          {text}
+        </pre>
+        <pre
+          className="texts"
+          style={{ whiteSpace: "pre-wrap", flex: 1, margin: 0 }}
+        >
+          {translationLines.join('\n')}
+        </pre>
       </div>
-      <input type="button" value="Clear" onClick={()=> setText("")} />
+      <input type="button" value="Clear" onClick={() => setText("")} />
     </>
   );
 }
