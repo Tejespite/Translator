@@ -9,9 +9,16 @@ app.use(express.json())
 app.use(cors({
     origin: "https://latin-hu-translator.netlify.app",
 }));
+const allowedOrigins = [
+  "https://latin-hu-translator.netlify.app",
+  "https://latin-dictionary.netlify.app"
+];
+
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "https://latin-hu-translator.netlify.app");
-  res.header("Access-Control-Allow-Origin", "https://latin-dictionary.netlify.app");
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   next();
