@@ -6,23 +6,23 @@ const fetch = require('node-fetch');
 const app = express();
 
 app.use(express.json())
-app.use(cors({
-    origin: "https://latin-hu-translator.netlify.app",
-}));
 const allowedOrigins = [
   "https://latin-hu-translator.netlify.app",
   "https://latin-dictionary.netlify.app"
 ];
 
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.header("Access-Control-Allow-Origin", origin);
-  }
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  next();
-});
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept"]
+}));
+
 
 const endpoint = "https://models.github.ai/inference";
 const model = "openai/gpt-4.1";
