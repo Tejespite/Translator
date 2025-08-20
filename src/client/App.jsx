@@ -170,7 +170,8 @@ function Dictionary() {
 
     try {
       const response = await fetch(
-        `https://translator-wyiz.onrender.com/api/vocabulary/search/?query=${encodeURIComponent(searchedWord)}&forms_only=false`,
+        //`https://translator-wyiz.onrender.com/api/vocabulary/search/?query=${encodeURIComponent(searchedWord)}&forms_only=false`,
+        `https://www.latin-is-simple.com/api/vocabulary/search/?query=${encodeURIComponent(searchedWord)}&forms_only=false`,
         {
           headers: {
             "accept": "application/json"
